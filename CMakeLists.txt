@@ -16,5 +16,6 @@ find_package(Boost 1.75 REQUIRED COMPONENTS system)
 set(network-monitor_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
 add_executable(network-monitor ${network-monitor_SOURCES})
+target_compile_definitions(network-monitor PRIVATE _WIN32_WINNT=0x0A00)
 target_compile_features(network-monitor PRIVATE cxx_std_11)
 target_link_libraries(network-monitor PRIVATE Boost::Boost)
