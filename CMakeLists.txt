@@ -14,9 +14,15 @@ find_package(Boost 1.75 REQUIRED COMPONENTS system)
 
 
 set(network-monitor_SOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(network-monitor_SOURCES "${network-monitor_SOURCES_DIR}/main.cpp")
+set(network-monitor_SOURCES
+    ${network-monitor_SOURCES_DIR}/main.cpp
+    ${network-monitor_SOURCES_DIR}/websocket-client.cpp
+)
+set(network-monitor_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_executable(network-monitor ${network-monitor_SOURCES})
+target_include_directories(network-monitor PRIVATE ${network-monitor_INCLUDE_DIR})
+target_link_libraries(network-monitor PRIVATE Boost::system)
 target_compile_definitions(network-monitor PRIVATE
     # Boost.Asio
     _WIN32_WINNT=0x0A00
@@ -24,4 +30,3 @@ target_compile_definitions(network-monitor PRIVATE
     BOOST_BEAST_USE_STD_STRING_VIEW=1
 )
 target_compile_features(network-monitor PRIVATE cxx_std_17)
-target_link_libraries(network-monitor PRIVATE Boost::system)
