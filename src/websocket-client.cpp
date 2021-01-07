@@ -20,7 +20,7 @@ WebSocketClient::WebSocketClient(std::string_view url, std::string_view port, bo
     : m_url{url}
     , m_port{port}
     , m_resolver{ioc}
-    , m_websocket{boost::asio::make_strand(ioc)}
+    , m_websocket{ioc}
 {}
 
 void
