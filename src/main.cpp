@@ -20,31 +20,23 @@ int main()
         bool messageMatches{false};
         bool disconnected{false};
 
-        auto onSend{
-            [&messageSent](auto ec) {
-                messageSent = !ec;
+        auto onSend{[&messageSent](auto ec) {
+            messageSent = !ec;
+        }};
+        auto onConnect{[&connected, &wsClient, &onSend, kMessage](auto ec) {
+            connected = !ec;
+            if (!ec) {
+                wsClient.Send(kMessage, onSend);
             }
-        };
-        auto onConnect{
-            [&connected, &wsClient, &onSend, kMessage](auto ec) {
-                connected = !ec;
-                if (!ec) {
-                    wsClient.Send(kMessage, onSend);
-                }
-            }
-        };
-        auto onDisconnect{
-            [&disconnected](auto ec) {
-                disconnected = !ec;
-            }
-        };
-        auto onReceive{
-            [&messageReceived, &messageMatches, &wsClient, &onDisconnect, &kMessage](auto ec, auto received) {
-                messageReceived = !ec;
-                messageMatches = kMessage == received;
-                wsClient.Close(onDisconnect);
-            }
-        };
+        }};
+        auto onDisconnect{[&disconnected](auto ec) {
+            disconnected = !ec;
+        }};
+        auto onReceive{[&messageReceived, &messageMatches, &wsClient, &onDisconnect, &kMessage](auto ec, auto received) {
+            messageReceived = !ec;
+            messageMatches = kMessage == received;
+            wsClient.Close(onDisconnect);
+        }};
 
         wsClient.Connect(onConnect, onReceive);
         asioContext.run();
@@ -57,8 +49,7 @@ int main()
             return 1;
         }
     }
-    catch (std::exception& e)
-    {
+    catch (std::exception& e) {
         std::cerr << "Exception: " << e.what() << "\n";
     }
 
