@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include <websocket-client.hpp>
+#include <network-monitor/websocket-client.hpp>
 
 
 int main()
