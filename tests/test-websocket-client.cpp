@@ -1,57 +1,55 @@
-#include <iostream>
 #include <string>
+
+#include <boost/test/unit_test.hpp>
 
 #include <network-monitor/websocket-client.hpp>
 
 
-int main()
+BOOST_AUTO_TEST_SUITE( network_monitor )
+
+BOOST_AUTO_TEST_CASE( class_WebSocketClient )
 {
     constexpr auto kHost{"echo.websocket.org"};
     constexpr auto kPort{"80"};
     const std::string kMessage{"Hello WebSocket"};
 
-    try {
-        boost::asio::io_context asioContext{};
-        NetworkMonitor::WebSocketClient wsClient{kHost, kPort, asioContext};
+    boost::asio::io_context asioContext{};
+    NetworkMonitor::WebSocketClient wsClient{kHost, kPort, asioContext};
 
-        bool connected{false};
-        bool messageSent{false};
-        bool messageReceived{false};
-        bool messageMatches{false};
-        bool disconnected{false};
+    bool connected{false};
+    bool messageSent{false};
+    bool messageReceived{false};
+    bool disconnected{false};
+    std::string echoResponse{};
 
-        auto onSend{[&messageSent](auto ec) {
-            messageSent = !ec;
-        }};
-        auto onConnect{[&connected, &wsClient, &onSend, kMessage](auto ec) {
-            connected = !ec;
-            if (!ec) {
-                wsClient.Send(kMessage, onSend);
-            }
-        }};
-        auto onDisconnect{[&disconnected](auto ec) {
-            disconnected = !ec;
-        }};
-        auto onReceive{[&messageReceived, &messageMatches, &wsClient, &onDisconnect, &kMessage](auto ec, auto received) {
+    auto onSend{[&messageSent](boost::beast::error_code ec) {
+        messageSent = !ec;
+    }};
+    auto onConnect{[&connected, &wsClient, &onSend, kMessage](boost::beast::error_code ec) {
+        connected = !ec;
+        if (!ec) {
+            wsClient.Send(kMessage, onSend);
+        }
+    }};
+    auto onDisconnect{[&disconnected](boost::beast::error_code ec) {
+        disconnected = !ec;
+    }};
+    auto onReceive{
+        [&messageReceived, &echoResponse, &wsClient, &onDisconnect]
+        (boost::beast::error_code ec, std::string &&received) {
             messageReceived = !ec;
-            messageMatches = kMessage == received;
+            echoResponse = std::move(received);
             wsClient.Close(onDisconnect);
-        }};
+    }};
 
-        wsClient.Connect(onConnect, onReceive);
-        asioContext.run();
+    wsClient.Connect(onConnect, onReceive);
+    asioContext.run();
 
-        if (connected && messageSent && messageReceived && messageMatches && disconnected) {
-            std::cout << "Ok\n";
-        }
-        else {
-            std::cerr << "\nTest failed\n";
-            return 1;
-        }
-    }
-    catch (std::exception& e) {
-        std::cerr << "Exception: " << e.what() << "\n";
-    }
-
-    return 0;
+    BOOST_CHECK(connected);
+    BOOST_CHECK(messageSent);
+    BOOST_CHECK(messageReceived);
+    BOOST_CHECK(disconnected);
+    BOOST_CHECK_EQUAL(kMessage, echoResponse);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
