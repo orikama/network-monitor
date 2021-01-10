@@ -60,6 +60,9 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
         PRIVATE network-monitor
                 Boost::unit_test_framework
     )
+    target_compile_definitions(network-monitor-tests
+        PRIVATE TESTS_CACERT_PEM="${network-monitor-tests_SRC_DIR}/cacert.pem"
+    )
     
     add_test(
         NAME network-monitor-tests
