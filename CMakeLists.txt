@@ -11,6 +11,7 @@ endif()
 
 
 find_package(Boost 1.75 REQUIRED COMPONENTS system unit_test_framework)
+find_package(OpenSSL 1.1.1 REQUIRED)
 
 
 # ----------- network-monitor LIB -----------
@@ -27,7 +28,10 @@ set(network-monitor_HEADERS
 
 add_library(network-monitor STATIC ${network-monitor_SRC} ${network-monitor_HEADERS})
 target_include_directories(network-monitor PUBLIC ${network-monitor_INCLUDE_DIR})
-target_link_libraries(network-monitor PUBLIC Boost::system)
+target_link_libraries(network-monitor
+    PUBLIC Boost::system
+           OpenSSL::OpenSSL
+)
 target_compile_features(network-monitor PUBLIC cxx_std_17)
 target_compile_definitions(network-monitor PUBLIC
     # Boost.Asio
@@ -53,8 +57,8 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     
     add_executable(network-monitor-tests ${network-monitor-tests_SRC})
     target_link_libraries(network-monitor-tests
-    PRIVATE network-monitor
-    Boost::unit_test_framework
+        PRIVATE network-monitor
+                Boost::unit_test_framework
     )
     
     add_test(
